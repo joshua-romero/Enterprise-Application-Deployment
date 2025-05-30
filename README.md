@@ -17,7 +17,7 @@
 
 ## 📋 Overview
 
-This repository contains **battle-tested PowerShell scripts** designed for automated software deployment in enterprise environments. Perfect for system administrators, IT professionals, and deployment automation.
+This repository contains PowerShell scripts designed for automated, up-to-date software deployment in enterprise environments. Perfect for system administrators, IT professionals, and deployment automation.
 
 ### 📦 Available Scripts
 
