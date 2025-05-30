@@ -8,7 +8,7 @@
 
 **Automated PowerShell scripts for enterprise software deployment**
 
-[📖 Documentation](#-documentation) • [🎯 Features](#-features) • [⚡ Quick Start](#-quick-start) • [🔧 Troubleshooting](#-troubleshooting)
+[📖 Documentation](#-documentation) • [🎯 Features](#-features)
 
 </div>
 
@@ -148,23 +148,6 @@ Get-ExecutionPolicy -List
 # Set execution policy (run as admin)
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
-# Verify admin rights
-whoami /groups | findstr "S-1-16-12288"
-```
-</details>
-
-<details>
-<summary>🚫 <strong>Installation Failures</strong></summary>
-
-```powershell
-# Check disk space
-Get-WmiObject -Class Win32_LogicalDisk | Select-Object DeviceID, @{Name="FreeSpace(GB)";Expression={[math]::Round($_.FreeSpace/1GB,2)}}
-
-# Verify Windows Installer service
-Get-Service -Name "msiserver"
-
-# Check for pending reboots
-Get-ChildItem "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired" -ErrorAction SilentlyContinue
 ```
 </details>
 
@@ -181,27 +164,7 @@ $dirs = @(
     "$customPath\Logs",
     "$customPath\Software"
 )
-```
 
-## 🤝 Contributing
-
-We welcome contributions! Here's how to get started:
-
-1. 🍴 **Fork** this repository
-2. 🌿 **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. 💾 **Commit** your changes (`git commit -m 'Add amazing feature'`)
-4. 📤 **Push** to the branch (`git push origin feature/amazing-feature`)
-5. 🔄 **Open** a Pull Request
-
-### 📋 Contribution Guidelines
-
-- ✅ Test in isolated environment first
-- 📝 Update documentation for changes
-- 🎯 Follow existing code patterns
-- 📊 Include appropriate logging
-- 🔍 Add error handling for new features
-
----
 
 ## 📈 Roadmap
 
