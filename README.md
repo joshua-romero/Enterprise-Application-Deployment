@@ -84,12 +84,6 @@ PowerShell.exe -ExecutionPolicy Bypass -File ".\Install-AdobeAcrobat.ps1"
 PowerShell.exe -ExecutionPolicy Bypass -File ".\Install-GoogleChrome.ps1"
 ```
 
-#### Method 3: Remote Execution
-```powershell
-# Download and run directly (use with caution)
-iex (iwr -Uri "https://raw.githubusercontent.com/yourusername/repo/main/Install-GoogleChrome.ps1").Content
-```
-
 ---
 
 ## 📁 File Structure
