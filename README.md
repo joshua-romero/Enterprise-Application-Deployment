@@ -4,7 +4,6 @@
 
 ![PowerShell](https://img.shields.io/badge/PowerShell-5391FE?style=for-the-badge&logo=powershell&logoColor=white)
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)
 ![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg?style=for-the-badge)
 
 **Automated PowerShell scripts for enterprise software deployment**
@@ -256,19 +255,6 @@ We welcome contributions! Here's how to get started:
 
 </div>
 
----
-
-## 📄 License
-
-<div align="center">
-
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
-
-**⚠️ Disclaimer:** These scripts are provided as-is. Always test in non-production environments first.
-
----
-
-<sub>Made with ❤️ for the IT Community</sub>
 
 [![GitHub stars](https://img.shields.io/github/stars/yourusername/software-installer-scripts?style=social)](https://github.com/yourusername/software-installer-scripts/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/yourusername/software-installer-scripts?style=social)](https://github.com/yourusername/software-installer-scripts/network)
