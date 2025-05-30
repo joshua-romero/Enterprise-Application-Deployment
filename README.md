@@ -234,12 +234,7 @@ We welcome contributions! Here's how to get started:
 
 ## 📈 Roadmap
 
-- [ ] 🔄 **PowerShell 7** compatibility
-- [ ] 🐳 **Docker** containerization
-- [ ] 📊 **Advanced reporting** with HTML output
 - [ ] 🔗 **Integration** with SCCM/Intune
-- [ ] 🎯 **More software** support (Firefox, VLC, etc.)
-- [ ] 📱 **Teams/Slack** notifications
 
 ---
 
@@ -249,14 +244,7 @@ We welcome contributions! Here's how to get started:
 
 **Special Thanks To:**
 
-🙏 [**asheroto**](https://github.com/asheroto) - URL parsing techniques for Adobe Acrobat script  
-💡 **PowerShell Community** - Best practices and patterns  
-🔧 **System Administrators** - Real-world testing and feedback  
+🙏 [**asheroto**](https://github.com/asheroto) - URL parsing techniques for Adobe Acrobat script 
 
 </div>
 
-
-[![GitHub stars](https://img.shields.io/github/stars/yourusername/software-installer-scripts?style=social)](https://github.com/yourusername/software-installer-scripts/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/yourusername/software-installer-scripts?style=social)](https://github.com/yourusername/software-installer-scripts/network)
-
-</div>
