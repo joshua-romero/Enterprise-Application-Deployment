@@ -84,8 +84,6 @@ PowerShell.exe -ExecutionPolicy Bypass -File ".\Install-AdobeAcrobat.ps1"
 PowerShell.exe -ExecutionPolicy Bypass -File ".\Install-GoogleChrome.ps1"
 ```
 
----
-
 ## 📁 File Structure
 
 ```
@@ -184,27 +182,6 @@ $dirs = @(
     "$customPath\Software"
 )
 ```
-
-### 📧 Add Email Notifications
-
-```powershell
-# Add this function to send completion emails
-function Send-CompletionEmail {
-    param($Status, $Software)
-    
-    $emailParams = @{
-        To = "admin@company.com"
-        From = "deployment@company.com"
-        Subject = "$Software Installation - $Status"
-        Body = "Installation completed with status: $Status"
-        SmtpServer = "mail.company.com"
-    }
-    
-    Send-MailMessage @emailParams
-}
-```
-
----
 
 ## 🤝 Contributing
 
