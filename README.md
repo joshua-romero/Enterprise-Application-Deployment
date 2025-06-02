@@ -8,7 +8,7 @@
 
 **Automated PowerShell scripts for enterprise software deployment**
 
-• [🎯 Features](#-features) • 
+[🎯 Features](#-features)
 
 </div>
 
