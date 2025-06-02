@@ -1,4 +1,4 @@
-#Enterprise Software Installer Scripts
+## Enterprise Software Installer Scripts
 
 <div align="center">
 
@@ -151,29 +151,9 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 </details>
 
----
-
-## ⚙️ Advanced Configuration
-
-### 🎨 Customize Installation Paths
-
-```powershell
-# Modify these variables at the top of each script
-$customPath = "D:\MyDeployments"
-$dirs = @(
-    "$customPath\Logs",
-    "$customPath\Software"
-)
-
-
-## 📈 Roadmap
-
-- [ ] 🔗 **Integration** with SCCM/Intune
-
----
-
 ## 🏆 Acknowledgments
 
+---
 <div align="center">
 
 **Special Thanks To:**
