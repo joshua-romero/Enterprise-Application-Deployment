@@ -8,8 +8,6 @@
 
 **Automated PowerShell scripts for enterprise software deployment**
 
-[🎯 Features](#-features)
-
 </div>
 
 ---
@@ -60,14 +58,15 @@ This repository contains PowerShell scripts designed for automated, up-to-date s
 ### 🛠️ Prerequisites
 
 ```powershell
-# Check PowerShell version (requires 5.0+)
+
+# PowerShell version 5.0+ Required
 $PSVersionTable.PSVersion
 
-# Verify admin privileges
+# Administrative Privileges Required
 ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
 ```
 
-### 🚀 Installation
+### 🚀 Execution
 
 #### Method 1: Direct Execution
 ```powershell
