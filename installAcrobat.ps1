@@ -278,8 +278,8 @@ END {
                 TimeStamp "Update successful!"
             }
             3010 {
-                Write-Host TimeStamp "Update successful! (Exit code 3010 - reboot required)"
-                TimeStamp "NOTE: For full functionality, reboot the system when convenient"
+                TimeStamp "Update successful! (Exit code 3010 - reboot required)"
+                TimeStamp "NOTE: For full functionality, reboot the system when available"
             }
             1641 {
                 TimeStamp "Update successful! (Exit code 1641 - installer initiated reboot)"
