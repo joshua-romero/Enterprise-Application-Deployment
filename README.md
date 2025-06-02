@@ -99,18 +99,7 @@ PowerShell.exe -ExecutionPolicy Bypass -File ".\Install-GoogleChrome.ps1"
 
 ---
 
-## 📊 Logging & Monitoring
-
-### 📈 Real-time Monitoring
-```powershell
-# Watch logs in real-time
-Get-Content "C:\Patches\Logs\Acrobat-$(Get-Date -Format yyyy-MM-dd).log" -Wait
-
-# Check last 10 log entries
-Get-Content "C:\Patches\Logs\Chrome-$(Get-Date -Format yyyy-MM-dd).log" -Tail 10
-```
-
-### 🎯 Exit Code Reference
+## 🎯 Exit Code Reference
 
 | Code | Status | Action Required |
 |------|--------|----------------|
