@@ -18,11 +18,11 @@ This repository contains PowerShell scripts designed for automated, up-to-date s
 
 ### 📦 Available Scripts
 
-| Script | Purpose | Status |
+| Script | Purpose | Installation Type |
 |--------|---------|--------|
-| 🅰️ **Adobe Acrobat DC** | Install + Auto-update to latest version | ✅ Active |
-| 🌐 **Google Chrome** | Enterprise MSI installation | ✅ Active |
-
+| **Adobe Acrobat DC** | Install + Auto-update to latest version | x86 |
+| **Google Chrome** | Enterprise MSI installation | x64 |
+| **Microsoft Edge** | Enterprise MSI installation | x64 |
 ---
 
 ## ✨ Features
@@ -71,10 +71,13 @@ $PSVersionTable.PSVersion
 #### Method 1: Direct Execution
 ```powershell
 # Adobe Acrobat DC
-.\Install-AdobeAcrobat.ps1
+.\installAcrobat.ps1
 
 # Google Chrome Enterprise
-.\Install-GoogleChrome.ps1
+.\installChrome.ps1
+
+# Microsoft Edge Enterprise
+.\installEdge.ps1
 ```
 
 #### Method 2: Bypass Execution Policy
