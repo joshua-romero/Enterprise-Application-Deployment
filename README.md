@@ -98,6 +98,8 @@ PowerShell.exe -ExecutionPolicy Bypass -File ".\installEdge.ps1"
 │   └── 🗂️ [temporary files]
 └── 📂 Chrome\
     └── 🗂️ [temporary files]
+└── 📂 Edge\
+    └── 🗂️ [temporary files]
 ```
 
 ---
@@ -112,36 +114,6 @@ PowerShell.exe -ExecutionPolicy Bypass -File ".\installEdge.ps1"
 | `Other` | ❌ **Failed** | Check logs for details |
 
 ---
-
-## 🔧 Troubleshooting
-
-<details>
-<summary>🌐 <strong>Download Issues</strong></summary>
-
-```powershell
-# Test internet connectivity
-Test-NetConnection -ComputerName "www.google.com" -Port 80
-
-# Check proxy settings
-netsh winhttp show proxy
-
-# Manual download test
-Invoke-WebRequest -Uri "https://dl.google.com/chrome/install/GoogleChromeStandaloneEnterprise64.msi" -OutFile "test.msi"
-```
-</details>
-
-<details>
-<summary>🔒 <strong>Permission Problems</strong></summary>
-
-```powershell
-# Check execution policy
-Get-ExecutionPolicy -List
-
-# Set execution policy (run as admin)
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-
-```
-</details>
 
 ## 🏆 Acknowledgments
 
