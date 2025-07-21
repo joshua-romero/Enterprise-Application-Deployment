@@ -93,6 +93,7 @@ PowerShell.exe -ExecutionPolicy Bypass -File ".\installEdge.ps1"
 📂 C:\Patches\
 ├── 📂 Logs\
 │   ├── 📄 Acrobat-2024-01-15.log
+│   ├── 📄 Edge-2024-01-15.log
 │   └── 📄 Chrome-2024-01-15.log
 ├── 📂 Acrobat\
 │   └── 🗂️ [temporary files]
