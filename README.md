@@ -82,8 +82,9 @@ $PSVersionTable.PSVersion
 
 #### Method 2: Bypass Execution Policy
 ```powershell
-PowerShell.exe -ExecutionPolicy Bypass -File ".\Install-AdobeAcrobat.ps1"
-PowerShell.exe -ExecutionPolicy Bypass -File ".\Install-GoogleChrome.ps1"
+PowerShell.exe -ExecutionPolicy Bypass -File ".\installAcrobat.ps1"
+PowerShell.exe -ExecutionPolicy Bypass -File ".\installChrome.ps1"
+PowerShell.exe -ExecutionPolicy Bypass -File ".\installEdge.ps1"
 ```
 
 ## 📁 File Structure
