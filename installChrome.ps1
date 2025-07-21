@@ -1,3 +1,21 @@
+<#
+.SYNOPSIS
+    Automates Google Chrome installation with latest available patch
+
+.DESCRIPTION
+    This script performs a complete Google Chrome deployment by executing the following:
+    - Checks for existing Google Chrome installation
+    - Downloads and installs latest Google Chrome if not present
+
+.NOTES 
+    Author: Joshua Romero - jromero@usbr.gov
+    Last updated: 06/01/2025
+
+    Change History:
+    - 1.0 - 06-01-2025 - Initial Release 
+
+#>
+
 BEGIN {
     $date = (Get-Date -Format yyyy-MM-dd)
     $Software = 'Chrome'
@@ -18,7 +36,7 @@ BEGIN {
     )
 
     foreach ($dir in $dirs) {
-        if (!(Test-Path $dir)) {.0000
+        if (!(Test-Path $dir)) {
             New-Item -Path $dir -ItemType Directory -Force | Out-Null
             TimeStamp "Created directory: $dir"
         }
@@ -31,7 +49,7 @@ BEGIN {
     if (Test-Path -Path $chromePath) {
         $chromeExists = $true
         $ver = (Get-Item $chromePath).VersionInfo.FileVersion
-        TimeStamp "Found Chrome (v$ver)" | Out-Null
+        TimeStamp "Found $Software (v$ver)" | Out-Null
     }
 }
 
