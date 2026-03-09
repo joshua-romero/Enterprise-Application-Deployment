@@ -11,25 +11,28 @@
 
 .NOTES 
     Author: Joshua Romero - jromero@usbr.gov
-    Last updated: 7/16/2025
+    Last updated: 3-9-2026
 
     Change History:
     - 1.0 - 06-01-2025 - Initial Release 
     - 1.1 - 07-15-2025 - Added backup workflow to use previous patch if there's no 32-bit patch for current release
+    - 1.2 - 03-09-2026 - Modified parsing methods 
+    - Changed Acrobat detection methods
+
 
 .LINK
     https://helpx.adobe.com/acrobat/release-note/release-notes-acrobat-reader.html
 #>
 
 BEGIN {
+
     $date = (Get-Date -Format yyyy-MM-dd)
     $software = 'Acrobat'
-    $acrobatPath = "${env:ProgramFiles(x86)}\Adobe\Acrobat DC\Acrobat\Acrobat.exe"
     $logPath = "C:\Patches\Logs\$Software-$date.log"
 
     function TimeStamp($Message) {
         $timeStamped = "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') - $Message"
-        #Write-Host $timeStamped -ForegroundColor Cyan
+#        Write-Host $timeStamped -ForegroundColor Cyan - to be removed
         Add-Content -Path $logPath -Value $timeStamped
         return $timeStamped
     }
@@ -45,324 +48,156 @@ BEGIN {
         }
     }
 
-    TimeStamp "Checking to see if $Software is already installed..."
-    $acrobatExists = $false
+    $regPaths = @(
+        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*",
+        "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*"
+    )
 
-    if (Test-Path -Path $acrobatPath) {
+    $acrobatExists = $false
+    $acrobatVer = $null
+    $updateNeeded = $false
+
+    $acrobat = Get-ItemProperty $regPaths | Where-Object { $_.DisplayName -like "*Acrobat*" }
+
+    if ($acrobat) {
         $acrobatExists = $true
-        $ver = (Get-Item "${env:ProgramFiles(x86)}\Adobe\Acrobat DC\Acrobat\Acrobat.exe").VersionInfo.FileVersion
-        TimeStamp "Found $Software (v$ver) - checking for updates..." | Out-Null
+        $acrobatVer = $acrobat.DisplayVersion
+        TimeStamp "Found $software (v$acrobatVer)"
+    } else {
+        TimeStamp "$software not installed"
     }
 
+    $relNotesURL = "https://www.adobe.com/devnet-docs/acrobatetk/tools/ReleaseNotesDC/index.html"
+
+    try {
+        $html = curl.exe -s $relNotesURL
+        $joinedHtml = $html -join "`n"
+        TimeStamp "Getting latest Acrobat version"
+
+        $versionMatches = [regex]::Matches($joinedHtml, '(\d{2}\.\d{3}\.\d{5})')
+
+        if ($versionMatches.Count -gt 0) {
+            $latestVer = $versionMatches[0].Value
+            $mspVer = $latestVer.Replace('.', '')
+            $updateUrl = "https://ardownload2.adobe.com/pub/adobe/acrobat/win/AcrobatDC/$mspVer/AcrobatDCUpd${mspVer}.msp"
+            $mspPath = "C:\Patches\$Software\AcrobatDCUpd${mspVer}.msp"
+            TimeStamp "Latest version: $latestVer"
+            TimeStamp "Update URL: $updateUrl"
+        } else {
+            TimeStamp "Could not parse version from release notes"
+        }
+    } catch {
+        TimeStamp "Failed to fetch release notes: $_"
+    }
+
+    if ($acrobatExists -and $acrobatVer -and $latestVer) {
+        if ([version]$acrobatVer -ge [version]$latestVer) {
+            TimeStamp "$software is already up to date (v$acrobatVer)"
+        } else {
+            TimeStamp "$software needs update: v$acrobatVer -> v$latestVer"
+            $updateNeeded = $true
+        }
+    } elseif (-not $acrobatExists) {
+        $updateNeeded = $true
+    }
+
+    $vcRedistExists = $false
+    if (-not $acrobatExists) {
+        $allApps = Get-ItemProperty $regPaths
+        $vcRedist = $allApps | Where-Object { 
+            $_.DisplayName -like "*Visual C++ 2013*" -and $_.DisplayName -like "*x64*"
+        }
+        if ($vcRedist) {
+            $vcRedistExists = $true
+            TimeStamp "Found VC++ 2013 Redistributable (v$($vcRedist.DisplayVersion))"
+        } else {
+            TimeStamp "VC++ 2013 Redistributable not found"
+        }
+    }
+
+    $baseInstallerUrl = "https://trials.adobe.com/AdobeProducts/APRO/Acrobat_HelpX/win32/Acrobat_DC_Web_WWMUI.zip"
+    $zipPath = "C:\Patches\$Software\Acrobat_DC_Web_WWMUI.zip"
+    $msiPath = "C:\Patches\$Software\Adobe Acrobat\AcroPro.msi"
+    $vcRedistUrl = "https://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe"
+    $vcRedistPath = "C:\Patches\$Software\vcredist_x64_2013.exe"
 
 }
 PROCESS {
 
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-    #TimeStamp "Checking for Visual C++ 2013..."
-
-    $regPaths = @(
-        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*",
-        "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*"
-    )
-
-    $vcRedisExists = $false
-    foreach ($reg in $regPaths) {
-        $vcRedis = Get-ItemProperty $reg | Where-Object { 
-            ($_.DisplayName -like "*Visual C++ 2013*" -and $_.DisplayName -like "*x64*") -or
-            ($_.DisplayName -like "*Visual C++ Redistributable*2013*" -and $_.DisplayName -like "*x64*")
-        }
-        if ($vcRedis) {
-            $vcRedisExists = $true
-            TimeStamp "Found Visual C++ Redistributable 2013... (v$($vcRedis.DisplayVersion))"
-            break
-        }
-    }
-
-    if (-not $vcRedisExists) {
-        $vcRedistUrl = "https://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe"
-        $vcRedistPath = "C:\Patches\Acrobat\vcredist_x64_2013.exe" 
+    if (-not $acrobatExists -and -not $vcRedistExists) {
         try {
-            TimeStamp "Downloading: Visual C++ Redistributable 2013..."
-            Import-Module BitsTransfer -ErrorAction Stop
-            Start-BitsTransfer -Source $vcRedistUrl -Destination $vcRedistPath -Priority High
-            TimeStamp "Downloaded: Visual C++ Redistributable 2013..."
-        }
-        catch {
-            TimeStamp "Download Failed: BitsTransfer failed - Attempting alternate method"
-            $wc = New-Object System.Net.WebClient
-            $wc.DownloadFile($vcRedistUrl, $vcRedistPath)
-            TimeStamp "Downloaded: Visual C++ Redistributable 2013..."
-        }
-        try {
-            TimeStamp "Installing: Visual C++ Redistributable 2013..."
+            TimeStamp "Downloading VC++ 2013 Redistributable..."
+            Invoke-WebRequest -Uri $vcRedistUrl -OutFile $vcRedistPath -UseBasicParsing -TimeoutSec 120
+            TimeStamp "Downloaded VC++ 2013 Redistributable"
+
+            TimeStamp "Installing VC++ 2013 Redistributable..."
             Start-Process -FilePath $vcRedistPath -ArgumentList "/install /quiet /norestart" -Wait
-            TimeStamp "Installed: Visual C++ Redistributable 2013..."
-        }
-        catch {
-            TimeStamp "Failed: Visual C++ Redistributable 2013 - $_"
+            TimeStamp "Installed VC++ 2013 Redistributable"
+        } catch {
+            TimeStamp "Failed to install VC++ 2013: $_"
+            exit 1
         }
     }
 
-    if ($acrobatExists) {
-        TimeStamp "Acrobat installed - Checking for updates"
-    }
-    else {
-        TimeStamp "Acrobat not found - Installing..."
-        $url = "https://trials.adobe.com/AdobeProducts/APRO/Acrobat_HelpX/win32/Acrobat_DC_Web_WWMUI.zip"
-        $zipFile = "C:\Patches\$Software\Acrobat_DC_Web_WWMUI.zip"
-
+    if (-not $acrobatExists) {
         try {
-            TimeStamp "Downloading: Adobe Acrobat DC via Start-BitsTransfer"
-            Import-Module BitsTransfer -ErrorAction Stop
-            Start-BitsTransfer -Source $url -Destination $zipFile -Priority High
-            TimeStamp "Downloaded: Adobe Acrobat DC"
-        }
-        catch {
-            TimeStamp "Download failed: BitsTransfer failed - Attempting alternate method"
-            try {
-                TimeStamp "Downloading: Adobe Acrobat DC via Invoke-WebRequest"
-                Invoke-WebRequest -Uri $url -OutFile $zipFile -UseBasicParsing
-                TimeStamp "Downloaded: Adobe Acrobat DC"
-            }
-            catch {
-                TimeStamp "Download failed: $_"
-                exit 1
-            }
+            TimeStamp "Downloading Adobe Acrobat DC..."
+            Invoke-WebRequest -Uri $baseInstallerUrl -OutFile $zipPath -UseBasicParsing -TimeoutSec 600
+            TimeStamp "Downloaded Adobe Acrobat DC"
+        } catch {
+            TimeStamp "Failed to download Acrobat: $_"
+            exit 1
         }
 
         try {
             TimeStamp "Extracting Adobe Acrobat DC..."
-            try {
-                Add-Type -AssemblyName System.IO.Compression.FileSystem
-                [System.IO.Compression.ZipFile]::ExtractToDirectory($zipFile, "C:\Patches\$Software")
-            }
-            catch {
-                Expand-Archive -Path $zipFile -DestinationPath "C:\Patches\$Software" -Force
-            }
-            
-            TimeStamp "Extracted: Adobe Acrobat DC install"
-            
-        } 
-        catch {
-            TimeStamp "Extraction failed: $_"
+            Expand-Archive -Path $zipPath -DestinationPath "C:\Patches\$Software" -Force
+            TimeStamp "Extracted Adobe Acrobat DC"
+        } catch {
+            TimeStamp "Failed to extract Acrobat: $_"
             exit 1
         }
-        
-        $msiPath = "C:\Patches\$Software\Adobe Acrobat\AcroPro.msi"
-        if (Test-Path -Path $msiPath) {
-            TimeStamp "Installing Acrobat DC (this takes a while)..."
+
+        if (Test-Path $msiPath) {
             try {
+                TimeStamp "Installing Adobe Acrobat DC (this takes a while)..."
                 Start-Process -FilePath "msiexec.exe" -ArgumentList "/i `"$msiPath`" /qn" -Wait
-                
-                TimeStamp "Installed: Adobe Acrobat DC"
-            } 
-            catch {
+                TimeStamp "Installed Adobe Acrobat DC"
+            } catch {
                 TimeStamp "MSI install failed: $_"
                 exit 1
             }
-        } 
-        else {
-            TimeStamp "Can't find AcroPro.msi at $msiPath"
+        } else {
+            TimeStamp "Cannot find AcroPro.msi at $msiPath"
             exit 1
         }
-        TimeStamp "Base Acrobat installation finished"
-    }
-}
-END {
-    # Credit where credit is due
-    <# 
-        Thanks to asheroto on GitHub for the URL parsing approach
-        Modified and improved for better reliability
-    #>
-
-    #TimeStamp "Checking Adobe Acrobat updates..."
-
-    $relNotesURL = "https://helpx.adobe.com/acrobat/release-note/release-notes-acrobat-reader.html"
-    try {
-        $wc = New-Object System.Net.WebClient
-        $html = $wc.DownloadString($relNotesURL)
-        
-        if ([string]::IsNullOrEmpty($html)) {
-            throw "Got empty page from Adobe"
-        }
-    }
-    catch {
-        try {
-            TimeStamp "Download failed - Attempting alternate method"
-            $html = curl.exe -s $relNotesURL
-            if ([string]::IsNullOrEmpty($html)) {
-                throw "Got empty page from curl"
-            }
-        }
-        catch {
-            TimeStamp "Download failed: $_"
-        }
     }
 
-    $allVersions = @()
-    $pattern = [regex]::new('<a href="(https://www\.adobe\.com/devnet-docs/acrobatetk/tools/ReleaseNotesDC/[^"]+)"[^>]*>(DC [^<]+)</a>', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
-    $matches = $pattern.Matches($html)
-    
-    foreach ($match in $matches) {
-        $allVersions += @{
-            Url = $match.Groups[1].Value
-            Name = $match.Groups[2].Value
-        }
-    }
-    
-    if ($allVersions.Count -eq 0) {
-        TimeStamp "Couldn't find any version links - Adobe changed their page?"
-        return
-    }
-    
-    $versionIndex = 0
-    $updateDownloaded = $false
-    
-    while (-not $updateDownloaded -and $versionIndex -lt $allVersions.Count) {
-        $currentVersion = $allVersions[$versionIndex]
-        $verUrl = $currentVersion.Url
-        $verNum = $currentVersion.Name
-        
-        if ($versionIndex -eq 0) {
-            TimeStamp "Found latest Acrobat version: $verNum"
-        }
-        else {
-            TimeStamp "Trying previous version: $verNum"
-        }
-        
+    if ($updateNeeded) {
         try {
-            try {
-                $verPage = $wc.DownloadString($verUrl)
-            }
-            catch {
-                $verPage = curl.exe -s $verUrl
-                if ([string]::IsNullOrEmpty($verPage)) {
-                    throw "Got empty version page"
-                }
-            }
-        } 
-        catch {
-            TimeStamp "Couldn't get version details: $_"
-            $versionIndex++
-            continue
+            TimeStamp "Downloading Acrobat update $latestVer..."
+            Invoke-WebRequest -Uri $updateUrl -OutFile $mspPath -UseBasicParsing -TimeoutSec 600
+            TimeStamp "Downloaded Acrobat update"
+        } catch {
+            TimeStamp "Failed to download update: $_"
+            exit 1
         }
-        
+
         try {
-            $mspPattern = [regex]::new('<a[^>]+href="([^"]+\.msp)"[^>]*>([^<]+)</a>', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
-            $mspMatch = $mspPattern.Match($verPage)
-            if (-not $mspMatch.Success) {
-                throw "Couldn't find MSP link - maybe format changed?"
-            }
-            $mspUrl = $mspMatch.Groups[1].Value
-            $mspName = [System.IO.Path]::GetFileNameWithoutExtension($mspUrl)
-            $mspVer = $mspName -replace '.*?(\d{4,}).*', '$1'
+            TimeStamp "Installing Acrobat update $latestVer..."
+            $p = Start-Process -FilePath "msiexec.exe" -ArgumentList "/update `"$mspPath`" /norestart /qn" -Wait -PassThru
             
-            TimeStamp "Found update package: $mspVer"
-        } 
-        catch {
-            TimeStamp "Failed to get update details: $_"
-            $versionIndex++
-            continue
+            switch ($p.ExitCode) {
+                0       { TimeStamp "Acrobat successfully updated to v$latestVer" }
+                3010    { TimeStamp "Update successful (reboot required)" }
+                1641    { TimeStamp "Update successful (installer initiated reboot)" }
+                default { TimeStamp "Update failed with exit code: $($p.ExitCode)" }
+            }
+        } catch {
+            TimeStamp "Error during update: $_"
         }
+    }
 
-        try {
-            $updateUrl = "https://ardownload2.adobe.com/pub/adobe/acrobat/win/AcrobatDC/$mspVer/AcrobatDCUpd${mspVer}.msp"
-            $mspPath = "C:\Patches\$Software\AcrobatDCUpd${mspVer}.msp" 
-        } 
-        catch {
-            TimeStamp "Couldn't build update URL: $_"
-            $versionIndex++
-            continue
-        }
-       
-        TimeStamp "Downloading Acrobat update $mspVer..."
-        
-        try {
-            Import-Module BitsTransfer -ErrorAction Stop
-            Start-BitsTransfer -Source $updateUrl -Destination $mspPath -Priority High -ErrorAction Stop
-        
-            TimeStamp "Downloaded: Adobe Acrobat DC (v$mspVer)"
-            $updateDownloaded = $true
-        }
-        catch {
-            $error404 = $false
-            if ($_.Exception.Message -like "*404*" -or $_.Exception.Message -like "*not exist*") {
-                $error404 = $true
-                TimeStamp "Download failed due to 404 Error. No 32-bit patch for this release"
-            }
-            else {
-                TimeStamp "Download failed - Attempting alternate method"
-            }
-            
-            if (-not $error404) {
-                try {
-                    Invoke-WebRequest -Uri $updateUrl -OutFile $mspPath -UseBasicParsing -ErrorAction Stop
-                    
-                    TimeStamp "Downloaded: Adobe Acrobat DC (v$mspVer)"
-                    $updateDownloaded = $true
-                }
-                catch {
-                    if ($_.Exception.Response.StatusCode -eq 404 -or $_.Exception.Message -like "*404*") {
-                        TimeStamp "Failed to download update: 404 error (no 32-bit patch for this release)"
-                    }
-                    else {
-                        TimeStamp "Failed to download update: $_"
-                        return
-                    }
-                }
-            }
-        }
-        
-        if (-not $updateDownloaded) {
-            $versionIndex++
-            if ($versionIndex -lt $allVersions.Count) {
-                #TimeStamp "Attempting previous release..."
-            }
-        }
-    }
-    
-    if (-not $updateDownloaded) {
-        TimeStamp "Could not find any downloadable update after checking $($allVersions.Count) versions"
-        return
-    }
-    
-    if (-not (Test-Path $mspPath)) {
-        TimeStamp "Downloaded file not found at $mspPath"
-        return
-    }
-    
-    try {
-        TimeStamp "Installing Acrobat update $mspVer..."
-        
-        $p = Start-Process -FilePath "msiexec.exe" -ArgumentList "/update `"$mspPath`" /norestart /qn /l*v $logPath" -Wait -PassThru
-        $exitCode = $p.ExitCode
-        
-        switch ($exitCode) {
-            0 {
-                TimeStamp "Acrobat $mspVer successfully updated"
-            }
-            3010 {
-                Write-Host TimeStamp "Update successful! (Exit code 3010 - reboot required)"
-                TimeStamp "NOTE: For full functionality, reboot the system when convenient"
-            }
-            1641 {
-                TimeStamp "Update successful! (Exit code 1641 - installer initiated reboot)"
-            }
-            default {
-                TimeStamp "Update failed with code: $exitCode - check log at $logPath"
-            }
-        }
-    }
-    catch {
-        TimeStamp "Error during update: $_"
-    }
-    finally {
-        #TimeStamp "Cleaning up..."
-        if (Test-Path "C:\Patches\$Software") {
-            Remove-Item "C:\Patches\$Software" -Recurse -Force -ErrorAction SilentlyContinue
-        }
-        TimeStamp "Acrobat update completed"
-    }    
 }
